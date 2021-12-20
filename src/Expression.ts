@@ -45,9 +45,9 @@ export namespace ExpressionType {
 	}
 
 	export class Literal extends Expression {
-		value: Object;
+		value: string | number | boolean | null;
 
-		constructor(value: Object) {
+		constructor(value: string | number | boolean | null) {
 			super();
 
 			this.value = value;

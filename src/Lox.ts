@@ -68,7 +68,7 @@ export class Lox {
     }
 }
 
-// new Lox();
+new Lox();
 
 import { Expression, ExpressionType } from './Expression';
 import { TokenType } from './TokenType';

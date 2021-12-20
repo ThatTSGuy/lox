@@ -82,6 +82,6 @@ function defineAst(baseName: string, types: string[]) {
 defineAst('Expression', [
     'Binary   > left: Expression, operator: Token, right: Expression',
     'Grouping > expression: Expression',
-    'Literal  > value: Object',
+    'Literal  > value: string | number | boolean | null',
     'Unary    > operator: Token, right: Expression'
 ])
