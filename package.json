@@ -6,7 +6,9 @@
   "types": "dist/lox.d.ts",
   "scripts": {
     "build": "tsc",
-    "watch": "ts-node-dev --respawn --clear src/lox.ts",
+    "build-ast": "npx tsc ./src/generateAst.ts | node ./src/generateAst.js | del ./src/generateAst.js",
+    "start": "tsc & node dist/Lox.js",
+    "watch": "npx ts-node-dev src/Lox.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

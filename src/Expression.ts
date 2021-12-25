@@ -1,14 +1,15 @@
-import { Token } from './token';
+import { LoxValue, Token } from './Lox';
 
-export interface Visitor {
-	visitBinaryExpression(expression: ExpressionType.Binary): string;
-	visitGroupingExpression(expression: ExpressionType.Grouping): string;
-	visitLiteralExpression(expression: ExpressionType.Literal): string;
-	visitUnaryExpression(expression: ExpressionType.Unary): string;
+export interface ExpressionVisitor {
+	visitBinaryExpression(expression: ExpressionType.Binary): LoxValue;
+	visitGroupingExpression(expression: ExpressionType.Grouping): LoxValue;
+	visitLiteralExpression(expression: ExpressionType.Literal): LoxValue;
+	visitUnaryExpression(expression: ExpressionType.Unary): LoxValue;
+	visitVariableExpression(expression: ExpressionType.Variable): LoxValue;
 }
 
 export abstract class Expression {
-	abstract accept(visitor: Visitor): any;
+	abstract accept(visitor: ExpressionVisitor): LoxValue;
 }
 
 export namespace ExpressionType {
@@ -25,7 +26,7 @@ export namespace ExpressionType {
 			this.right = right;
 		}
 
-		accept(visitor: Visitor): string {
+		accept(visitor: ExpressionVisitor): LoxValue {
 			return visitor.visitBinaryExpression(this);
 		}
 	}
@@ -39,7 +40,7 @@ export namespace ExpressionType {
 			this.expression = expression;
 		}
 
-		accept(visitor: Visitor): string {
+		accept(visitor: ExpressionVisitor): LoxValue {
 			return visitor.visitGroupingExpression(this);
 		}
 	}
@@ -53,7 +54,7 @@ export namespace ExpressionType {
 			this.value = value;
 		}
 
-		accept(visitor: Visitor): string {
+		accept(visitor: ExpressionVisitor): LoxValue {
 			return visitor.visitLiteralExpression(this);
 		}
 	}
@@ -69,8 +70,22 @@ export namespace ExpressionType {
 			this.right = right;
 		}
 
-		accept(visitor: Visitor): string {
+		accept(visitor: ExpressionVisitor): LoxValue {
 			return visitor.visitUnaryExpression(this);
+		}
+	}
+
+	export class Variable extends Expression {
+		name: Token;
+
+		constructor(name: Token) {
+			super();
+
+			this.name = name;
+		}
+
+		accept(visitor: ExpressionVisitor): LoxValue {
+			return visitor.visitVariableExpression(this);
 		}
 	}
 

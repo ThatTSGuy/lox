@@ -1,5 +1,4 @@
-import { createWriteStream, write, WriteStream } from 'fs';
-import { basename } from 'path';
+import { createWriteStream, WriteStream } from 'fs';
 
 // Lox Expression Grammar
 // Literals. Numbers, strings, Booleans, and nil.
@@ -20,11 +19,11 @@ import { basename } from 'path';
 //                | "+"  | "-"  | "*" | "/" ;
 
 function defineVisitor(writer: WriteStream, baseName: string, types: string[]) {
-    writer.write('export interface Visitor {\n');
+    writer.write(`export interface ${baseName}Visitor {\n`);
 
     for (let type of types) {
         const typeName: string = type.split('>')[0].trim();
-        writer.write(`\tvisit${typeName}${baseName}(${baseName.toLowerCase()}: ${baseName}Type.${typeName}): string;\n`);
+        writer.write(`\tvisit${typeName}${baseName}(${baseName.toLowerCase()}: ${baseName}Type.${typeName}): LoxValue;\n`);
     }
 
     writer.write('}\n\n');
@@ -47,23 +46,23 @@ function defineType(writer: WriteStream, baseName: string, className: string, fi
     }
     writer.write('\t\t}\n\n')
 
-    writer.write(`\t\taccept(visitor: Visitor): string {\n`);
+    writer.write(`\t\taccept(visitor: ${baseName}Visitor): LoxValue {\n`);
     writer.write(`\t\t\treturn visitor.visit${className}${baseName}(this);\n`);
     writer.write('\t\t}\n')
 
     writer.write('\t}\n\n')
 }
 
-function defineAst(baseName: string, types: string[]) {
+function defineAst(baseName: string, types: string[], imports: string[]) {
     const writer = createWriteStream(`./src/${baseName}.ts`, { encoding: 'utf-8' });
 
-    writer.write("import { Token } from './token';\n\n");
+    writer.write(`import { LoxValue, ${imports.join(', ')} } from './Lox';\n\n`);
 
     defineVisitor(writer, baseName, types);
 
     // Abstract class
     writer.write(`export abstract class ${baseName} {\n`);
-    writer.write('\tabstract accept(visitor: Visitor): any;\n');
+    writer.write(`\tabstract accept(visitor: ${baseName}Visitor): LoxValue;\n`);
     writer.write('}\n\n');
 
     writer.write(`export namespace ${baseName}Type {\n`);
@@ -83,5 +82,16 @@ defineAst('Expression', [
     'Binary   > left: Expression, operator: Token, right: Expression',
     'Grouping > expression: Expression',
     'Literal  > value: string | number | boolean | null',
-    'Unary    > operator: Token, right: Expression'
+    'Unary    > operator: Token, right: Expression',
+    'Variable > name: Token',
+], [
+    'Token',
+])
+
+defineAst('Statement', [
+    'Expr     > expression: Expression',
+    'Print    > expression: Expression',
+    'Variable > name: Token, initializer: Expression | null',
+], [
+    'Token', 'Expression',
 ])

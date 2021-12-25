@@ -1,11 +1,12 @@
-import { Lox } from './Lox';
-import { Token } from './Token';
-import { TokenType } from './TokenType';
+import {
+    Token, TokenType,
+    ScanError
+} from './Lox';
 
 export class Scanner {
-    private Lox: Lox;
     private source: string;
     private tokens: Token[] = [];
+    private errors: ScanError[] = [];
     private start: number = 0;
     private current: number = 0;
     private line: number = 1;
@@ -31,20 +32,22 @@ export class Scanner {
         Scanner.keywords.set('while', TokenType.WHILE);
     }
 
-    constructor(Lox: Lox, source: string) {
-        this.Lox = Lox;
+    constructor(source: string) {
         this.source = source;
     }
 
-    scanTokens(): Token[] {
+    scanTokens(): { tokens: Token[], errors: ScanError[] } {
         while (!this.isAtEnd()) {
             // We are at the beginning of the next lexeme.
             this.start = this.current;
             this.scanToken();
         }
-
         this.tokens.push(new Token(TokenType.EOF, '', null, this.line));
-        return this.tokens;
+
+        return {
+            tokens: this.tokens,
+            errors: this.errors,
+        }
     }
 
     private scanToken(): void {
@@ -61,6 +64,7 @@ export class Scanner {
             case '+': this.addToken(TokenType.PLUS); break;
             case ';': this.addToken(TokenType.SEMICOLON); break;
             case '*': this.addToken(TokenType.STAR); break;
+            case '/': this.addToken(TokenType.SLASH); break;
 
             // One or two character tokens.
             case '!':
@@ -101,7 +105,7 @@ export class Scanner {
                 } else if (this.isAlpha(c)) {
                     this.consumeIdentifier();
                 } else {
-                    this.Lox.report(this.line, `Unexpected character: ${c}`);
+                    this.errors.push(new ScanError(`Unexpected character: ${c}`, this.line));
                 }
         }
     }
@@ -113,7 +117,7 @@ export class Scanner {
         }
 
         if (this.isAtEnd()) {
-            this.Lox.report(this.line, 'Unterminated string.');
+            this.errors.push(new ScanError('Unterminated string.', this.line));
         }
 
         // The closing ".
@@ -135,7 +139,7 @@ export class Scanner {
         }
 
         const value: string = this.source.substring(this.start, this.current);
-        this.addToken(TokenType.NUMBER, value);
+        this.addToken(TokenType.NUMBER, parseFloat(value));
     }
 
     private consumeIdentifier(): void {
@@ -143,7 +147,7 @@ export class Scanner {
 
         const text: string = this.source.substring(this.start, this.current);
         let type: TokenType | undefined = Scanner.keywords.get(text);
-        
+
         if (!type) type = TokenType.IDENTIFIER;
 
         this.addToken(type);
@@ -154,7 +158,7 @@ export class Scanner {
     }
 
     private isDigit(c: string): boolean {
-        return /d/.test(c);
+        return /\d/.test(c);
     }
 
     private isAlpha(c: string): boolean {
@@ -188,7 +192,7 @@ export class Scanner {
         return this.source[this.current + 1];
     }
 
-    private addToken(type: TokenType, literal: string | null = null): void {
+    private addToken(type: TokenType, literal: any = null): void {
         const text: string = this.source.substring(this.start, this.current);
         this.tokens.push(new Token(type, text, literal, this.line));
     }
