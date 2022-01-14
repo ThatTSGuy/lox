@@ -65,6 +65,7 @@ export class Scanner {
             case ';': this.addToken(TokenType.SEMICOLON); break;
             case '*': this.addToken(TokenType.STAR); break;
             case '/': this.addToken(TokenType.SLASH); break;
+            case '^': this.addToken(TokenType.CARET); break;
 
             // One or two character tokens.
             case '!':

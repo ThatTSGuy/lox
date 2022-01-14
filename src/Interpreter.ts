@@ -15,6 +15,7 @@ export class Interpreter implements ExpressionVisitor, StatementVisitor {
                 this.execute(statement);
             }
         } catch (error: any) {
+            console.log(error);
             console.log(error.name, error.message);
         }
     }
@@ -115,6 +116,9 @@ export class Interpreter implements ExpressionVisitor, StatementVisitor {
             case TokenType.STAR:
                 this.checkNumberOperands(expression.operator, left, right);
                 return Number(left) * Number(right);
+            case TokenType.CARET:
+                this.checkNumberOperands(expression.operator, left, right);
+                return Math.pow(Number(left), Number(right));
         }
 
         // Unreachable

@@ -62,11 +62,7 @@ class Lox {
         readline.on('line', (line: string) => {
             if (line == null) process.exit(0);
 
-            try {
-                this.run(line);
-            } catch (error: any) {
-                console.log(`${colorize(Colors.RED, 'error')} - Lox ${error.name}: ${error.message}`);
-            }
+            this.run(line);
 
             readline.prompt();
         })

@@ -105,11 +105,11 @@ export class Parser {
     }
 
     private factor(): Expression {
-        let expr = this.unary();
+        let expr = this.exponent();
 
         while (this.matchAndAdvance(TokenType.SLASH, TokenType.STAR)) {
             const operator = this.previous();
-            const right = this.unary();
+            const right = this.exponent();
             expr = new ExpressionType.Binary(expr, operator, right);
         }
 
@@ -119,11 +119,23 @@ export class Parser {
     private unary(): Expression {
         if (this.matchAndAdvance(TokenType.BANG, TokenType.MINUS)) {
             const operator = this.previous();
-            const right = this.unary();
+            const right = this.exponent();
             return new ExpressionType.Unary(operator, right);
         }
 
-        return this.primary();
+        return this.exponent();
+    }
+
+    private exponent(): Expression {
+        const left = this.primary();
+
+        if (this.matchAndAdvance(TokenType.CARET)) {
+            const operator = this.previous();
+            const right = this.unary();
+            return new ExpressionType.Binary(left, operator, right);
+        }
+
+        return left;
     }
 
     private primary(): Expression {
